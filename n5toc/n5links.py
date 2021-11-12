@@ -7,7 +7,7 @@ from collections import namedtuple
 
 import numpy as np
 
-from .util import find_files
+import util
 
 TocEntry = namedtuple('TocEntry', 'sample stage section version full_version name offset offset_link link')
 
@@ -44,10 +44,11 @@ DEFAULT_NG_SETTINGS = {
   ]
 }
 
+
 def find_volumes(root_dir, exclude_dirs):
     # Find json files, but don't look in s0, s1, etc., or the explicitly excluded directories.
     # We could probably do this with
-    attrs_files = find_files(root_dir, '.json', ["s[0-9]+", "[0-9]+", *exclude_dirs])
+    attrs_files = util.find_files(root_dir, '.json', ["s[0-9]+", "[0-9]+", *exclude_dirs])
     vol_attrs = {}
     for p in attrs_files:
         p = p[len(root_dir)+1:]  # strip {root_dir}/ prefix
@@ -64,14 +65,14 @@ def find_volumes(root_dir, exclude_dirs):
     return vol_attrs
 
 
-def links_for_volumes(vol_attrs):
+def links_for_volumes(vol_attrs, nghost=NG_HOST, n5server=N5_FILE_SERVER):
     links = {}
     for p, a in vol_attrs.items():
-        links[p] = construct_nglink(p, a)
+        links[p] = construct_nglink(p, a, nghost, n5server)
     return links
 
 
-def construct_nglink(path, attrs, nghost=NG_HOST, n5server=N5_FILE_SERVER):
+def construct_nglink(path, attrs, nghost, n5server):
     path = Path(path)
     parts = path.parts[-5:-1]
 
